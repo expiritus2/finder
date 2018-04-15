@@ -24,12 +24,18 @@ passport.use(
             callbackURL: '/auth/google/callback'
         },
         async (accessToken, refreshToken, profile, done) => {
+            // console.log("this.profile", profile.emails);
             const existingUser = await User.findOne({googleId: profile.id});
             if(existingUser){
                 return done(null, existingUser);
             }
 
-            const user = await new User({googleId: profile.id}).save();
+            // const {id, value}
+            const user = await new User({
+                googleId: profile.id,
+                email: profile.emails[0].value,
+                displayName: profile.displayName
+            }).save();
             done(null, user);
         }
     )
