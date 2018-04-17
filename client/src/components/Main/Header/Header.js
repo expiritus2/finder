@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
+import {Link} from 'react-router-dom';
 
 class Header extends Component {
 
@@ -16,10 +17,10 @@ class Header extends Component {
                 );
             default:
                 return [
-                    <li key='1'>Hello, {auth.displayName}</li>,
+                    <li key='1'>Hello, <Link to={this.props.auth ? "/personal-area" : "/"}>{auth.displayName}</Link>
+                    </li>,
                     <li key='2'><a href="/api/logout">Logout</a></li>
                 ]
-
         }
     }
 
