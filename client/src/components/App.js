@@ -20,13 +20,13 @@ class App extends Component{
                     <Switch>
                         <Route path="/" exact render={() => (
                             auth
-                                ? (<Redirect to="/personal-area"/>)
-                                : (<Main/>)
+                                ? <Redirect to="/personal-area"/>
+                                : <Main/>
                         )} />
                         <Route path="/personal-area" exact render={() => (
                             !auth
-                                ? (<Redirect to="/" />)
-                                : (<PersonalArea/>)
+                                ? <Redirect to="/" />
+                                : <PersonalArea/>
                         )} />
                         <Route path="/admin" exact component={Admin} />
                     </Switch>
