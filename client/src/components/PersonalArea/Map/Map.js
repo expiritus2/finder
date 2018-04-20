@@ -23,8 +23,9 @@ export const Map = compose(
             this.setState({
                 bounds: null,
                 center: {
-                    lat: 41.9, lng: -87.624
+                    lat: 53.90446156201682, lng: 27.5601142277975
                 },
+
                 markers: [],
                 onMapMounted: ref => {
                     refs.map = ref;
@@ -33,6 +34,7 @@ export const Map = compose(
                 onSearchBoxMounted: ref => {
                     refs.searchBox = ref;
                 },
+
                 onPlacesChanged: () => {
                     const places = refs.searchBox.getPlaces();
                     const bounds = new window.google.maps.LatLngBounds();
@@ -55,9 +57,11 @@ export const Map = compose(
                     });
                     refs.map.fitBounds(bounds);
                 },
+
                 onDragEnd: (e) => {
                     console.log(e);
                 },
+
                 setMarker: (e) => {
                     this.setState((prevState, props) => {
                         return {
@@ -86,7 +90,7 @@ export const Map = compose(
 )(props =>
     <GoogleMap
         ref={props.onMapMounted}
-        defaultZoom={15}
+        defaultZoom={12}
         center={props.center}
         onBoundsChanged={props.onBoundsChanged}
         onClick={(e) => {
