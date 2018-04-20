@@ -2,19 +2,20 @@ import React from 'react';
 import {keys} from "../../../config/keys";
 
 import * as _ from "lodash";
-import { compose, withProps, lifecycle } from "recompose";
-import {withScriptjs, withGoogleMap, GoogleMap, Marker} from "react-google-maps";
+import {compose, withProps, lifecycle} from "recompose";
+import {withScriptjs, withGoogleMap, GoogleMap, Marker, InfoWindow} from "react-google-maps";
 import SearchBox from "react-google-maps/lib/components/places/SearchBox";
-
 import './Map.css';
+
 
 export const Map = compose(
     withProps({
         googleMapURL: `https://maps.googleapis.com/maps/api/js?key=${keys.googleMapApiKey}&v=3.exp&libraries=geometry,drawing,places`,
-        loadingElement: <div style={{ height: `100%` }} />,
-        containerElement: <div style={{ height: `400px` }} />,
-        mapElement: <div style={{ height: `100%` }} />,
+        loadingElement: <div style={{height: `100%`}}/>,
+        containerElement: <div style={{height: `400px`}}/>,
+        mapElement: <div style={{height: `100%`}}/>,
     }),
+
     lifecycle({
         componentWillMount() {
             const refs = {};
@@ -28,12 +29,7 @@ export const Map = compose(
                 onMapMounted: ref => {
                     refs.map = ref;
                 },
-                onBoundsChanged: () => {
-                    // this.setState({
-                    //     bounds: refs.map.getBounds(),
-                    //     center: refs.map.getCenter(),
-                    // })
-                },
+
                 onSearchBoxMounted: ref => {
                     refs.searchBox = ref;
                 },
@@ -48,23 +44,40 @@ export const Map = compose(
                             bounds.extend(place.geometry.location)
                         }
                     });
+
                     const nextMarkers = places.map(place => ({
                         position: place.geometry.location,
                     }));
                     const nextCenter = _.get(nextMarkers, '0.position', this.state.center);
 
                     this.setState({
-                        center: nextCenter,
-                        markers: nextMarkers,
+                        center: nextCenter
                     });
                     refs.map.fitBounds(bounds);
                 },
-                onDragEnd: (pos) => {
-                    console.log(pos);
+                onDragEnd: (e) => {
+                    console.log(e);
                 },
-                setMarker: () => {
+                setMarker: (e) => {
+                    this.setState((prevState, props) => {
+                        return {
+                            markers: [
+                                ...prevState.markers,
+                                {
+                                    position: e.latLng,
+                                    info: 'Some Text',
+                                    isOpen: false
+                                }
+                            ]
+                        }
+                    });
+                },
 
-                }
+                onToggleOpen: (index) => {
+                    const newMarkers = [...this.state.markers];
+                    newMarkers[index].isOpen = !newMarkers[index].isOpen;
+                    this.setState({markers: newMarkers});
+                },
             })
         },
     }),
@@ -76,7 +89,9 @@ export const Map = compose(
         defaultZoom={15}
         center={props.center}
         onBoundsChanged={props.onBoundsChanged}
-        onClick={(e) => {props.setMarker({position: {lat: e.ra.x, lng: e.ra.y}})}}
+        onClick={(e) => {
+            props.setMarker(e)
+        }}
     >
         <SearchBox
             ref={props.onSearchBoxMounted}
@@ -90,14 +105,21 @@ export const Map = compose(
                 className="search-input"
             />
         </SearchBox>
-        {console.log("this", props.markers)}
         {props.markers.map((marker, index) => {
-                return <Marker
-                    draggable
-                    key={index} position={marker.position}
-                />
-            }
-        )}
+            return <Marker
+                draggable
+                onClick={() => {props.onToggleOpen(index)}}
+                onDragEnd={(e) => {props.onDragEnd(e)}}
+                key={index}
+                position={marker.position}
+            >
+                {marker.isOpen && <InfoWindow>
+                    <div>
+                        {marker.info}
+                    </div>
+                </InfoWindow>}
+            </Marker>
+        })}
     </GoogleMap>
 );
 
