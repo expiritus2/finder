@@ -12,9 +12,7 @@ class PersonalArea extends Component{
             <div>
                 <Header/>
                 <h1>Personal Area</h1>
-                <Map
-                    isMarkerShown
-                />
+                <Map isMarkerShown/>
             </div>
         )
     }

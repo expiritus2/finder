@@ -11,3 +11,12 @@
     outline: none;
     text-overflow: ellipses;
 }
+
+.images-wrapper {
+    display: flex;
+}
+
+.images-wrapper img {
+    max-height: 50px;
+    border: 1px solid #ffffff;
+}
