@@ -65,7 +65,7 @@ export const Map = compose(
                 },
 
                 setMarker: (e) => {
-                    this.setState((prevState, props) => {
+                    this.setState((prevState) => {
                         return {
                             markers: [
                                 ...prevState.markers,
@@ -124,8 +124,8 @@ export const Map = compose(
                     }
                 },
 
-                saveMarker: () => {
-                    console.log("this", this.state.markers);
+                saveMarker: (index) => {
+                    console.log("this", this.state.markers[index]);
                 }
             })
         },
@@ -156,7 +156,7 @@ export const Map = compose(
         </SearchBox>
         {props.markers.map((marker, index) => {
             const {info: {title, imageUrls, subscription}, position, infoIsOpen} = marker;
-            const images = imageUrls.map((img, index) => <img key={getId()} src={img} alt=""/>);
+            const images = imageUrls.map((img) => <img key={getId()} src={img} alt=""/>);
             return <Marker
                 draggable
                 onClick={() => {
@@ -176,7 +176,7 @@ export const Map = compose(
                         <textarea onChange={e => props.onChangeSubscription(e.target.value, index)} value={subscription} placeholder="Subscription"/>
                         <div>
                             <button onClick={() => props.deleteMarker(index)}>Delete</button>
-                            <button onClick={() => props.saveMarker()}>Save</button>
+                            <button onClick={() => props.saveMarker(index)}>Save</button>
                         </div>
                     </div>
                 </InfoWindow>}
