@@ -8,6 +8,7 @@ import SearchBox from "react-google-maps/lib/components/places/SearchBox";
 import {getId} from "../../../utils/utils";
 
 import './Map.css';
+import InfoPopup from "./InfoPopup/InfoPopup";
 
 
 export const Map = compose(
@@ -29,6 +30,8 @@ export const Map = compose(
                 },
 
                 markers: [],
+                popupIsOpen: false,
+
                 onMapMounted: ref => {
                     refs.map = ref;
                 },
@@ -79,7 +82,8 @@ export const Map = compose(
                                     },
                                     infoIsOpen: true
                                 }
-                            ]
+                            ],
+                            popupIsOpen: true
                         }
                     });
                 },
@@ -97,33 +101,6 @@ export const Map = compose(
                     this.setState({markers});
                 },
 
-                onChangeTitle: (title, index) => {
-                    let markers = [...this.state.markers];
-                    markers[index].info.title = title;
-                    this.setState({markers});
-                },
-
-                onChangeSubscription: (subscription, index) => {
-                    let markers = [...this.state.markers];
-                    markers[index].info.subscription = subscription;
-                    this.setState({markers});
-                },
-
-                onChangeFile: (files, index) => {
-                    for(let i = 0; i < files.length; i++) {
-                        const reader = new FileReader();
-
-                        reader.onload = () => {
-                            let markers = [...this.state.markers];
-                            const dataUrl = reader.result;
-                            markers[index].info.imageUrls.push(dataUrl);
-                            this.setState({markers});
-                        };
-
-                        reader.readAsDataURL(files[i]);
-                    }
-                },
-
                 saveMarker: (index) => {
                     console.log("this", this.state.markers[index]);
                 }
@@ -132,56 +109,64 @@ export const Map = compose(
     }),
     withScriptjs,
     withGoogleMap
-)(props =>
-    <GoogleMap
-        ref={props.onMapMounted}
-        defaultZoom={12}
-        center={props.center}
-        onBoundsChanged={props.onBoundsChanged}
-        onClick={(e) => {
-            props.setMarker(e)
-        }}
-    >
-        <SearchBox
-            ref={props.onSearchBoxMounted}
-            bounds={props.bounds}
-            controlPosition={window.google.maps.ControlPosition.TOP_LEFT}
-            onPlacesChanged={props.onPlacesChanged}
+)(props => {
+        const {
+            center, bounds, markers, onMapMounted, popupIsOpen,
+            onBoundsChanged, setMarker, onSearchBoxMounted,
+            onPlacesChanged, onToggleOpen, onDragEnd, deleteMarker,
+            saveMarker
+        } = props;
+        return <GoogleMap
+            ref={onMapMounted}
+            defaultZoom={12}
+            center={center}
+            onBoundsChanged={onBoundsChanged}
+            onClick={(e) => {
+                setMarker(e)
+            }}
         >
-            <input
-                type="text"
-                placeholder="Search..."
-                className="search-input"
-            />
-        </SearchBox>
-        {props.markers.map((marker, index) => {
-            const {info: {title, imageUrls, subscription}, position, infoIsOpen} = marker;
-            const images = imageUrls.map((img) => <img key={getId()} src={img} alt=""/>);
-            return <Marker
-                draggable
-                onClick={() => {
-                    props.onToggleOpen(index)
-                }}
-                onDragEnd={(e) => {
-                    props.onDragEnd(e)
-                }}
-                key={index * new Date() * Math.random() * Math.random()}
-                position={position}
+            <SearchBox
+                ref={onSearchBoxMounted}
+                bounds={bounds}
+                controlPosition={window.google.maps.ControlPosition.TOP_LEFT}
+                onPlacesChanged={onPlacesChanged}
             >
-                {infoIsOpen && <InfoWindow>
-                    <div className="info-window">
-                        <div><input onChange={e => props.onChangeTitle(e.target.value, index)} value={title} type="text" placeholder="Title"/></div>
-                        <div className="images-wrapper">{images}</div>
-                        <div><input onChange={e => props.onChangeFile(e.target.files, index)} type="file" multiple /></div>
-                        <textarea onChange={e => props.onChangeSubscription(e.target.value, index)} value={subscription} placeholder="Subscription"/>
-                        <div>
-                            <button onClick={() => props.deleteMarker(index)}>Delete</button>
-                            <button onClick={() => props.saveMarker(index)}>Save</button>
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    className="search-input"
+                />
+            </SearchBox>
+            {markers.map((marker, index) => {
+                const {info: {title, imageUrls, subscription}, position, infoIsOpen} = marker;
+                const images = imageUrls.map((img) => <img key={getId()} src={img} alt=""/>);
+                return <Marker
+                    draggable
+                    onClick={() => {
+                        onToggleOpen(index)
+                    }}
+                    onDragEnd={(e) => {
+                        onDragEnd(e)
+                    }}
+                    key={index * new Date() * Math.random() * Math.random()}
+                    position={position}
+                >
+                    {infoIsOpen && <InfoWindow>
+                        <div className="info-window">
+                            <div>{title}</div>
+                            <div className="images-wrapper">{images}</div>
+                            {/*<div><input onChange={e => props.onChangeFile(e.target.files, index)} type="file" multiple /></div>*/}
+                            <div>{subscription}</div>
+                            <div>
+                                <button onClick={() => deleteMarker(index)}>Delete</button>
+                                <button onClick={() => saveMarker(index)}>Save</button>
+                            </div>
                         </div>
-                    </div>
-                </InfoWindow>}
-            </Marker>
-        })}
-    </GoogleMap>
+                    </InfoWindow>}
+                </Marker>
+            })}
+            {popupIsOpen && <InfoPopup emitToMap={(data) => {console.log(data)}} show={popupIsOpen}/>}
+        </GoogleMap>
+    }
 );
 
