@@ -63,8 +63,10 @@ export const Map = compose(
                     refs.map.fitBounds(bounds);
                 },
 
-                onDragEnd: (e) => {
-                    console.log("onDragEnd", e.latLng);
+                onDragEnd: (e, index) => {
+                    let markers = [...this.state.markers];
+                    markers[index].position = e.latLng;
+                    this.setState({markers});
                 },
 
                 setMarker: (e) => {
@@ -146,12 +148,15 @@ export const Map = compose(
                         onToggleOpen(index)
                     }}
                     onDragEnd={(e) => {
-                        onDragEnd(e)
+                        onDragEnd(e, index)
                     }}
                     key={index * new Date() * Math.random() * Math.random()}
                     position={position}
                 >
-                    {infoIsOpen && <InfoWindow>
+                    {infoIsOpen && <InfoWindow
+                        onCloseClick={() => {
+                            props.onToggleOpen(index)
+                        }}>
                         <div className="info-window">
                             <div>{title}</div>
                             <div className="images-wrapper">{images}</div>
